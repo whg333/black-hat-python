@@ -10,11 +10,11 @@ server.listen(5)
 
 print "[*] Listeneing on %s:%d" % (ip, port)
 
-def client_handler(client_socket):
-    response = client_socket.recv(1024)
+def client_handler(client):
+    response = client.recv(1024)
     print "[*] Reveived: %s" % response
-    client_socket.send("ACK!")
-    client_socket.close()
+    client.send("ACK!")
+    client.close()
     
 while True:
     client,addr = server.accept()

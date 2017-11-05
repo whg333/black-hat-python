@@ -82,11 +82,11 @@ def client_sender(buffer):
         print "[*] Connecting to %s:%d" % (target,port)
         
         buffer_len = len(buffer)
+        if not buffer_len:
+            buffer = "\n"
         print "buffer=%s, len(buffer)=%d\n" % (buffer,buffer_len)
-        
-        if buffer_len:
-            print "Connected first send:%s" % buffer
-            client.send(buffer)
+        print "Connected first send:%s" % buffer
+        client.send(buffer)
         
         while True:
             recv_len = 1
@@ -164,32 +164,33 @@ def client_handler(client):
     if command:
         #提示客户端输入命令
         prompt = "<BHP:#>"
-        client.send(prompt)        
+        
+        #第1次通信肯定是客户端发出，默认（ctrl-d/ctrl-z）没有则是换行\n
+        cmd_buffer = client.recv(1024)
+        if len(cmd_buffer):
+            response = run_command(cmd_buffer)
+            #print "1:"+response
+            client.send(response+"\n"+prompt)
+        else:
+            client.send(prompt)
+            
         while True:
             #等待客户端输入命令，直到发现换行符
             cmd_buffer = ""
             while "\n" not in cmd_buffer:
                 cmd_buffer += client.recv(1024)
                 
-            #cmd_buffer_len = len(cmd_buffer)
-            #print "1 cmd_buffer=%s, len(cmd_buffer)=%s\n" % (cmd_buffer,cmd_buffer_len)
-            #cmd_buffer = cmd_buffer.strip()
-            #cmd_buffer_len = len(cmd_buffer)
-            #print "2 cmd_buffer=%s, len(cmd_buffer)=%s\n" % (cmd_buffer,cmd_buffer_len)
             response = run_command(cmd_buffer)
-            print response
-            
+            #print "2:"+response
             client.send(response+"\n"+prompt)
         
 def run_command(command):
     #换行
     command = command.rstrip()
-    
     try:
         output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
     except:
-        output = "Failed to execute command:%s\n" % command
-        
+        output = "Failed to execute command:%s\n" % command      
     return output
 
 main()
