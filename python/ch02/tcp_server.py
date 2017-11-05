@@ -10,7 +10,7 @@ server.listen(5)
 
 print "[*] Listeneing on %s:%d" % (ip, port)
 
-def handle_client(client_socket):
+def client_handler(client_socket):
     response = client_socket.recv(1024)
     print "[*] Reveived: %s" % response
     client_socket.send("ACK!")
@@ -20,5 +20,5 @@ while True:
     client,addr = server.accept()
     print "[*] Accepted connection from: %s:%d" % (addr[0], addr[1])
     
-    client_handler = threading.Thread(target=handle_client, args=(client,))
-    client_handler.start()
+    client_thread = threading.Thread(target=client_handler, args=(client,))
+    client_thread.start()
